@@ -51,7 +51,7 @@ npm install
 npm run dev
 ```
 
-Клиент запустится на http://localhost:5173 с прокси API-запросов на :3001.
+Клиент запустится на http://localhost:3000 с прокси API-запросов на :3001 (через Next.js rewrites).
 
 ## Стек технологий
 
@@ -61,8 +61,7 @@ npm run dev
 | Database | PostgreSQL 17, Drizzle ORM |
 | PDF generation | Puppeteer (headless Chrome) |
 | XLSX generation | ExcelJS |
-| Frontend | React 19, Vite, TailwindCSS v4 |
-| Routing | React Router v7 |
+| Frontend | Next.js 15, React 19, TailwindCSS v4 |
 | Infrastructure | Docker Compose |
 
 ## API
