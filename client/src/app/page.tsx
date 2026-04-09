@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
-import { api } from '../api/client'
-import { ReportCard } from '../components/ReportCard'
-import type { ReportInfo } from '../types'
+'use client'
 
-export function HomePage() {
+import { useEffect, useState } from 'react'
+import { api } from '@/api/client'
+import { ReportCard } from '@/components/ReportCard'
+import type { ReportInfo } from '@/types'
+
+export default function HomePage() {
   const [reports, setReports] = useState<ReportInfo[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

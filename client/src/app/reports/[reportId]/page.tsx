@@ -1,12 +1,13 @@
-import { useEffect, useState, useCallback } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import { api } from '../api/client'
-import { RunStatusBadge } from '../components/RunStatusBadge'
-import type { ReportInfo, ReportRunDTO, OutputFormat, RunStatus } from '../types'
+'use client'
 
+import { useEffect, useState, useCallback, use } from 'react'
+import Link from 'next/link'
+import { api } from '@/api/client'
+import { RunStatusBadge } from '@/components/RunStatusBadge'
+import type { ReportInfo, ReportRunDTO, OutputFormat, RunStatus } from '@/types'
 
-export function ReportPage() {
-  const { reportId } = useParams<{ reportId: string }>()
+export default function ReportPage({ params }: { params: Promise<{ reportId: string }> }) {
+  const { reportId } = use(params)
   const [report, setReport] = useState<ReportInfo | null>(null)
   const [runs, setRuns] = useState<ReportRunDTO[]>([])
   const [loading, setLoading] = useState(true)
@@ -15,7 +16,7 @@ export function ReportPage() {
 
   // Form state
   const [selectedFormat, setSelectedFormat] = useState<OutputFormat>('xlsx')
-  const [params, setParams] = useState<Record<string, string>>({})
+  const [formParams, setFormParams] = useState<Record<string, string>>({})
 
   const loadRuns = useCallback(() => {
     if (!reportId) return
@@ -25,9 +26,9 @@ export function ReportPage() {
   useEffect(() => {
     if (!reportId) return
     Promise.all([api.getReport(reportId), api.getRuns(reportId)])
-      .then(([r, runs]) => {
+      .then(([r, loadedRuns]) => {
         setReport(r)
-        setRuns(runs)
+        setRuns(loadedRuns)
         setSelectedFormat(r.supportedFormats[0])
       })
       .catch((err) => setError(err.message))
@@ -48,7 +49,7 @@ export function ReportPage() {
     setGenerating(true)
     setError(null)
     try {
-      const run = await api.startRun(reportId, selectedFormat, params)
+      const run = await api.startRun(reportId, selectedFormat, formParams)
       setRuns((prev) => [run, ...prev])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Generation failed')
@@ -58,7 +59,7 @@ export function ReportPage() {
   }
 
   const handleParamChange = (name: string, value: string) => {
-    setParams((prev) => ({ ...prev, [name]: value }))
+    setFormParams((prev) => ({ ...prev, [name]: value }))
   }
 
   if (loading) {
@@ -74,7 +75,7 @@ export function ReportPage() {
       <div className="rounded-lg bg-red-50 p-6 text-center text-red-700">
         <p className="font-medium">Ошибка</p>
         <p className="mt-1 text-sm">{error}</p>
-        <Link to="/" className="mt-4 inline-block text-blue-600 hover:underline">
+        <Link href="/" className="mt-4 inline-block text-blue-600 hover:underline">
           ← К списку отчётов
         </Link>
       </div>
@@ -85,7 +86,7 @@ export function ReportPage() {
 
   return (
     <div>
-      <Link to="/" className="text-sm text-blue-600 hover:underline">
+      <Link href="/" className="text-sm text-blue-600 hover:underline">
         ← Все отчёты
       </Link>
 
@@ -121,7 +122,7 @@ export function ReportPage() {
               </label>
               {p.type === 'select' && p.options ? (
                 <select
-                  value={params[p.name] ?? (p.default as string) ?? ''}
+                  value={formParams[p.name] ?? (p.default as string) ?? ''}
                   onChange={(e) => handleParamChange(p.name, e.target.value)}
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 >
@@ -135,7 +136,7 @@ export function ReportPage() {
               ) : (
                 <input
                   type={p.type === 'date' ? 'date' : p.type === 'number' ? 'number' : 'text'}
-                  value={params[p.name] ?? (p.default as string) ?? ''}
+                  value={formParams[p.name] ?? (p.default as string) ?? ''}
                   onChange={(e) => handleParamChange(p.name, e.target.value)}
                   placeholder={p.label}
                   className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -252,5 +253,3 @@ function RunRow({ run }: { run: ReportRunDTO }) {
     </tr>
   )
 }
-
-

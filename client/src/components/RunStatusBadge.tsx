@@ -1,4 +1,4 @@
-import type { RunStatus } from '../types'
+import type { RunStatus } from '@/types'
 
 const STATUS_MAP: Record<RunStatus, { label: string; className: string }> = {
   pending: { label: 'В очереди', className: 'bg-yellow-100 text-yellow-800' },

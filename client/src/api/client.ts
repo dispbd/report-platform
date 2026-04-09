@@ -1,4 +1,4 @@
-import type { ReportInfo, ReportRunDTO, ApiResponse, OutputFormat } from '../types'
+import type { ReportInfo, ReportRunDTO, ApiResponse, OutputFormat } from '@/types'
 
 const BASE = '/api'
 

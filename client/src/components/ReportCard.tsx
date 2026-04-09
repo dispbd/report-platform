@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom'
-import type { ReportInfo } from '../types'
+import Link from 'next/link'
+import type { ReportInfo } from '@/types'
 
 const FORMAT_ICONS: Record<string, string> = {
   xlsx: '📗',
@@ -9,7 +9,7 @@ const FORMAT_ICONS: Record<string, string> = {
 export function ReportCard({ report }: { report: ReportInfo }) {
   return (
     <Link
-      to={`/reports/${report.id}`}
+      href={`/reports/${report.id}`}
       className="block rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-md hover:border-blue-300"
     >
       <h3 className="text-lg font-semibold text-gray-900">{report.name}</h3>

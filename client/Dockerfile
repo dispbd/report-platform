@@ -1,5 +1,5 @@
 # Report Platform Client — Dockerfile
-# Multi-stage: build React → serve via nginx
+# Multi-stage: build Next.js → serve via standalone
 
 # =============================================================================
 # Stage 1: Build
@@ -11,22 +11,24 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci
 
-COPY tsconfig.json vite.config.ts index.html ./
+COPY tsconfig.json next.config.ts postcss.config.mjs ./
 COPY src/ ./src/
 
 RUN npm run build
 
 # =============================================================================
-# Stage 2: Serve with nginx
+# Stage 2: Run with Node.js (Next.js standalone)
 # =============================================================================
-FROM nginx:alpine AS production
+FROM node:22-slim AS production
 
-# Copy built static files
-COPY --from=builder /app/dist /usr/share/nginx/html
+WORKDIR /app
 
-# nginx config for SPA routing + API proxy
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 
-EXPOSE 80
+EXPOSE 3000
 
-CMD ["nginx", "-g", "daemon off;"]
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
+
+CMD ["node", "server.js"]
