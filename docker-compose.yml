@@ -1,0 +1,55 @@
+services:
+  # --- PostgreSQL ---
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: report_platform
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Auto-executes on FIRST start: creates tables + seeds demo data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # --- Backend API ---
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - '3001:3001'
+    environment:
+      PORT: 3001
+      NODE_ENV: production
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/report_platform
+      TEMP_DIR: ./temp
+      LOG_LEVEL: info
+      LOG_PRETTY: 'true'
+      CLIENT_ORIGIN: http://localhost:3000
+      FILE_CLEANUP_HOURS: 6
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # --- Frontend (React) ---
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - '3000:80'
+    depends_on:
+      - server
+
+volumes:
+  pgdata:
